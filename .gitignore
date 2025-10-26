@@ -1,0 +1,51 @@
+# Node modules
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output
+dist/
+build/
+*.tgz
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+.spotify-dl-logs/
+
+# Cache
+.cache/
+.spotify-dl-cache/
+
+# Config (contains credentials)
+.spotify-dl/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Downloads (default output)
+downloads/
+
+# Temp files
+*.temp
+*.tmp
+temp/
+tmp/
+
+# Test coverage
+coverage/
+.nyc_output/

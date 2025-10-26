@@ -1,0 +1,49 @@
+{
+  "name": "spotify-music-downloader-cli",
+  "version": "1.0.0",
+  "description": "Enterprise-grade CLI tool to download Spotify playlists and songs",
+  "main": "src/index.js",
+  "bin": {
+    "spotify-dl": "./bin/cli.js",
+    "spdl": "./bin/cli.js"
+  },
+  "scripts": {
+    "start": "node bin/cli.js",
+    "test": "jest",
+    "lint": "eslint src/"
+  },
+  "keywords": [
+    "spotify",
+    "downloader",
+    "music",
+    "cli",
+    "youtube",
+    "mp3",
+    "playlist"
+  ],
+  "author": "Mustafa Azad",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "commander": "^11.1.0",
+    "inquirer": "^8.2.5",
+    "axios": "^1.6.2",
+    "@distube/ytdl-core": "^4.13.3",
+    "ytdl-core": "^4.11.5",
+    "play-dl": "^1.9.7",
+    "fluent-ffmpeg": "^2.1.2",
+    "node-id3": "^0.2.6",
+    "cli-progress": "^3.12.0",
+    "ora": "^5.4.1",
+    "chalk": "^4.1.2",
+    "dotenv": "^16.3.1",
+    "p-limit": "^3.1.0",
+    "youtube-search-api": "^1.2.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "eslint": "^8.56.0"
+  }
+}
