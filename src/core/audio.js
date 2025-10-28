@@ -14,7 +14,7 @@ class AudioProcessor {
 
   verifyFFmpeg() {
     try {
-      ffmpeg.getAvailableFormats((err, formats) => {
+      ffmpeg.getAvailableFormats((err) => {
         if (err) {
           console.error('\n⚠️  FFmpeg not found. Please install FFmpeg:');
           console.error('   Ubuntu/Debian: sudo apt-get install ffmpeg');
@@ -46,9 +46,9 @@ class AudioProcessor {
           resolve(outputPath);
         })
         .on('error', async (error) => {
-          await this.logger.error('Audio conversion failed', { 
-            inputPath, 
-            error: error.message 
+          await this.logger.error('Audio conversion failed', {
+            inputPath,
+            error: error.message
           });
           reject(new Error(`FFmpeg conversion failed: ${error.message}`));
         })
@@ -79,9 +79,9 @@ class AudioProcessor {
           resolve(outputPath);
         })
         .on('error', async (error) => {
-          await this.logger.error('Audio conversion with progress failed', { 
-            inputPath, 
-            error: error.message 
+          await this.logger.error('Audio conversion with progress failed', {
+            inputPath,
+            error: error.message
           });
           reject(new Error(`FFmpeg conversion failed: ${error.message}`));
         })

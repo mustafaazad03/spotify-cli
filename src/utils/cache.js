@@ -19,13 +19,13 @@ class MetadataCache {
       const cacheFile = path.join(this.cacheDir, this.hashKey(key));
       const data = await fs.readFile(cacheFile, 'utf8');
       const cached = JSON.parse(data);
-      
+
       // Check if expired
       if (Date.now() - cached.timestamp > this.ttl) {
         await fs.unlink(cacheFile);
         return null;
       }
-      
+
       return cached.data;
     } catch (error) {
       return null;
@@ -36,7 +36,7 @@ class MetadataCache {
     try {
       await fs.mkdir(this.cacheDir, { recursive: true });
       const cacheFile = path.join(this.cacheDir, this.hashKey(key));
-      
+
       await fs.writeFile(
         cacheFile,
         JSON.stringify({ data, timestamp: Date.now() })

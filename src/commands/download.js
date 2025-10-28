@@ -1,6 +1,5 @@
 const path = require('path');
 const fs = require('fs').promises;
-const chalk = require('chalk');
 const pLimit = require('p-limit');
 
 const SpotifyClient = require('../core/spotify');
@@ -42,7 +41,7 @@ class DownloadCommand {
 
   async downloadTrack(url, options) {
     const trackId = this.extractTrackId(url);
-    
+
     if (!trackId) {
       throw new Error('Invalid Spotify track URL');
     }
@@ -55,13 +54,13 @@ class DownloadCommand {
     await fs.mkdir(options.output, { recursive: true });
 
     await this.downloadAndProcessTrack(track, options);
-    
+
     this.progress.showSuccess(`Downloaded: ${track.artist} - ${track.name}`);
   }
 
   async downloadPlaylist(url, options) {
     const playlistId = this.extractPlaylistId(url);
-    
+
     if (!playlistId) {
       throw new Error('Invalid Spotify playlist URL');
     }
@@ -75,7 +74,7 @@ class DownloadCommand {
 
   async downloadAlbum(url, options) {
     const albumId = this.extractAlbumId(url);
-    
+
     if (!albumId) {
       throw new Error('Invalid Spotify album URL');
     }
@@ -89,21 +88,21 @@ class DownloadCommand {
 
   async downloadMultipleTracks(tracks, options) {
     const { output, concurrent } = options;
-    
+
     // Create output directory
     await fs.mkdir(output, { recursive: true });
-    
+
     // Concurrent download limit
     const limit = pLimit(parseInt(concurrent));
-    
+
     // Create progress bar
     const overallBar = this.progress.createTrackProgress('Overall Progress', tracks.length);
-    
+
     let successCount = 0;
     let failCount = 0;
 
     // Download tracks concurrently
-    const downloadPromises = tracks.map((track, index) =>
+    const downloadPromises = tracks.map((track) =>
       limit(async () => {
         try {
           await this.downloadAndProcessTrack(track, options);
@@ -113,16 +112,16 @@ class DownloadCommand {
           failCount++;
           overallBar.increment();
           this.progress.showError(`Failed: ${track.artist} - ${track.name} (${error.message})`);
-          await this.logger.error('Track download failed', { 
+          await this.logger.error('Track download failed', {
             track: `${track.artist} - ${track.name}`,
-            error: error.message 
+            error: error.message
           });
         }
       })
     );
-    
+
     await Promise.all(downloadPromises);
-    
+
     this.progress.stop();
     console.log('\n');
     this.progress.showSuccess(`Downloaded ${successCount} tracks successfully`);
@@ -134,15 +133,15 @@ class DownloadCommand {
 
   async downloadAndProcessTrack(track, options) {
     const { output, quality } = options;
-    
+
     // Initialize downloader if not done yet
     await this.initializeDownloader();
-    
+
     // Sanitize filename
     const filename = this.sanitizeFilename(`${track.artist} - ${track.name}`);
     const tempPath = path.join(output, `${filename}.temp`);
     const outputPath = path.join(output, `${filename}.mp3`);
-    
+
     // Check if file already exists
     try {
       await fs.access(outputPath);
@@ -151,24 +150,24 @@ class DownloadCommand {
     } catch {
       // File doesn't exist, continue with download
     }
-    
+
     // Check cache for YouTube video ID
     const cacheKey = `yt:${track.artist}:${track.name}`;
     let videoId = await this.cache.get(cacheKey);
-    
+
     // Search YouTube if not cached
     const downloader = this.useYtDlp ? this.ytdlp : this.youtube;
-    
+
     if (!videoId) {
       videoId = await downloader.searchTrack(track.name, track.artist);
       await this.cache.set(cacheKey, videoId);
     }
-    
+
     try {
       if (this.useYtDlp) {
         // yt-dlp downloads and converts in one step
         await downloader.downloadAudio(videoId, tempPath);
-        
+
         // If yt-dlp created an MP3, move it directly
         if (await this.fileExists(tempPath)) {
           const fsSync = require('fs');
@@ -186,18 +185,20 @@ class DownloadCommand {
         if (fsSync.existsSync(tempPath)) {
           fsSync.unlinkSync(tempPath);
         }
-      } catch {}
+      } catch (cleanupError) {
+        // Ignore cleanup errors
+      }
       throw error;
     }
-    
+
     // Embed metadata
     await this.metadata.embedMetadata(outputPath, track);
-    
-    await this.logger.info('Track download completed', { 
+
+    await this.logger.info('Track download completed', {
       track: `${track.artist} - ${track.name}`,
-      outputPath 
+      outputPath
     });
-    
+
     return outputPath;
   }
 
@@ -236,15 +237,21 @@ class DownloadCommand {
   }
 
   detectUrlType(url) {
-    if (url.includes('/track/')) return 'track';
-    if (url.includes('/playlist/')) return 'playlist';
-    if (url.includes('/album/')) return 'album';
+    if (url.includes('/track/')) {
+      return 'track';
+    }
+    if (url.includes('/playlist/')) {
+      return 'playlist';
+    }
+    if (url.includes('/album/')) {
+      return 'album';
+    }
     return null;
   }
 
   async download(url, options) {
     const urlType = this.detectUrlType(url);
-    
+
     switch (urlType) {
       case 'track':
         await this.downloadTrack(url, options);

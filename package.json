@@ -1,16 +1,21 @@
 {
   "name": "spotify-music-downloader-cli",
   "version": "1.0.0",
-  "description": "Enterprise-grade CLI tool to download Spotify playlists and songs",
+  "description": "CLI tool to download Spotify playlists and songs",
   "main": "src/index.js",
   "bin": {
-    "spotify-dl": "./bin/cli.js",
-    "spdl": "./bin/cli.js"
+    "spotify-dl": "bin/cli.js",
+    "spdl": "bin/cli.js"
   },
   "scripts": {
     "start": "node bin/cli.js",
-    "test": "jest",
-    "lint": "eslint src/"
+    "test": "jest --coverage",
+    "test:watch": "jest --watch",
+    "lint": "eslint src/ bin/",
+    "lint:fix": "eslint src/ bin/ --fix",
+    "prepublishOnly": "npm test && npm run lint",
+    "preversion": "npm test",
+    "postversion": "git push && git push --tags"
   },
   "keywords": [
     "spotify",
@@ -19,31 +24,67 @@
     "cli",
     "youtube",
     "mp3",
-    "playlist"
+    "playlist",
+    "album",
+    "metadata",
+    "id3",
+    "audio",
+    "streaming",
+    "spotify-downloader",
+    "music-downloader",
+    "yt-dlp"
   ],
-  "author": "Mustafa Azad",
+  "author": {
+    "name": "Mustafa Azad",
+    "email": "mustafaazad533@gmail.com",
+    "url": "https://github.com/mustafaazad03"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mustafaazad03/spotify-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mustafaazad03/spotify-cli/issues"
+  },
+  "homepage": "https://github.com/mustafaazad03/spotify-cli#readme",
   "license": "MIT",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
   },
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "preferGlobal": true,
+  "files": [
+    "bin/",
+    "src/",
+    "README.md",
+    "LICENSE",
+    "EXAMPLES.md",
+    "CONFIG.md",
+    "INSTALL_YTDLP.md"
+  ],
   "dependencies": {
-    "commander": "^11.1.0",
-    "inquirer": "^8.2.5",
-    "axios": "^1.6.2",
     "@distube/ytdl-core": "^4.13.3",
-    "ytdl-core": "^4.11.5",
-    "play-dl": "^1.9.7",
-    "fluent-ffmpeg": "^2.1.2",
-    "node-id3": "^0.2.6",
-    "cli-progress": "^3.12.0",
-    "ora": "^5.4.1",
+    "axios": "^1.6.2",
     "chalk": "^4.1.2",
+    "cli-progress": "^3.12.0",
+    "commander": "^11.1.0",
     "dotenv": "^16.3.1",
+    "fluent-ffmpeg": "^2.1.2",
+    "inquirer": "^8.2.5",
+    "node-id3": "^0.2.6",
+    "ora": "^5.4.1",
     "p-limit": "^3.1.0",
-    "youtube-search-api": "^1.2.1"
+    "play-dl": "^1.9.7",
+    "youtube-search-api": "^2.0.1",
+    "ytdl-core": "^4.11.5"
   },
   "devDependencies": {
-    "jest": "^29.7.0",
-    "eslint": "^8.56.0"
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0"
   }
 }

@@ -1,0 +1,51 @@
+# Tests
+tests/
+*.test.js
+coverage/
+jest.config.json
+
+# Development
+.git/
+.github/
+.vscode/
+.idea/
+.eslintrc.js
+
+# Logs
+*.log
+logs/
+.spotify-dl-logs/
+
+# Cache
+.spotify-dl-cache/
+node_modules/.cache/
+
+# Environment
+.env
+.env.*
+.spotify-dl/
+
+# Build artifacts
+downloads/
+test-download/
+test-playlist/
+dist/
+*.tgz
+
+# Scripts
+test-cli.sh
+*.sh
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation (development only)
+Enterprise-Grade Spotify Music Downloader CLI - De.md
+PROJECT_COMPLETE.md
+
+# Temp files
+*.temp
+*.tmp
+temp/
+tmp/

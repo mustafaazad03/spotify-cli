@@ -36,7 +36,7 @@ class SpotifyClient {
 
       this.accessToken = response.data.access_token;
       this.tokenExpiry = Date.now() + (response.data.expires_in * 1000);
-      
+
       await this.logger.info('Spotify authentication successful');
     } catch (error) {
       await this.logger.error('Spotify authentication failed', { error: error.message });
@@ -70,24 +70,27 @@ class SpotifyClient {
         await this.sleep(retryAfter * 1000);
         return this.makeRequest(endpoint, params);
       }
-      
+
       if (error.response?.status === 404) {
-        const resourceType = endpoint.includes('/playlist') ? 'Playlist' : 
-                           endpoint.includes('/album') ? 'Album' : 
-                           endpoint.includes('/track') ? 'Track' : 'Resource';
-        throw new Error(`${resourceType} not found. The URL may be incorrect or the resource may be private/unavailable.`);
+        const resourceType = endpoint.includes('/playlist') ? 'Playlist'
+          : endpoint.includes('/album') ? 'Album'
+            : endpoint.includes('/track') ? 'Track' : 'Resource';
+        throw new Error(
+          `${resourceType} not found. The URL may be incorrect or ` +
+          'the resource may be private/unavailable.'
+        );
       }
-      
+
       if (error.response?.status === 401) {
         throw new Error('Authentication failed. Please run: spotify-dl config');
       }
-      
-      await this.logger.error('Spotify API request failed', { 
+
+      await this.logger.error('Spotify API request failed', {
         endpoint,
         status: error.response?.status,
-        error: error.message 
+        error: error.message
       });
-      
+
       throw new Error(`Spotify API error: ${error.response?.data?.error?.message || error.message}`);
     }
   }
@@ -101,8 +104,9 @@ class SpotifyClient {
     const tracks = [];
     let offset = 0;
     const limit = 100;
+    let hasMore = true;
 
-    while (true) {
+    while (hasMore) {
       const data = await this.makeRequest(`/playlists/${playlistId}/tracks`, {
         offset,
         limit,
@@ -114,7 +118,7 @@ class SpotifyClient {
         .map(item => this.formatTrackData(item.track))
       );
 
-      if (!data.next) break;
+      hasMore = !!data.next;
       offset += limit;
     }
 
@@ -128,8 +132,9 @@ class SpotifyClient {
 
     // First, get album info for artwork
     const albumData = await this.makeRequest(`/albums/${albumId}`);
+    let hasMore = true;
 
-    while (true) {
+    while (hasMore) {
       const data = await this.makeRequest(`/albums/${albumId}/tracks`, {
         offset,
         limit
@@ -146,7 +151,7 @@ class SpotifyClient {
         trackNumber: track.track_number
       })));
 
-      if (!data.next) break;
+      hasMore = !!data.next;
       offset += limit;
     }
 

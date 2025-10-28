@@ -12,12 +12,12 @@ class TokenBucket {
 
   async consume(tokens = 1) {
     this.refill();
-    
+
     if (this.tokens >= tokens) {
       this.tokens -= tokens;
       return true;
     }
-    
+
     // Wait for token availability
     const waitTime = ((tokens - this.tokens) / this.refillRate) * 1000;
     await this.sleep(waitTime);
@@ -29,7 +29,7 @@ class TokenBucket {
     const now = Date.now();
     const timePassed = (now - this.lastRefill) / 1000;
     const tokensToAdd = timePassed * this.refillRate;
-    
+
     this.tokens = Math.min(this.capacity, this.tokens + tokensToAdd);
     this.lastRefill = now;
   }

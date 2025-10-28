@@ -36,15 +36,15 @@ class MetadataEmbedder {
           };
           fs.unlinkSync(artPath); // Clean up
         } catch (artError) {
-          await this.logger.warn('Failed to download album art', { 
-            error: artError.message 
+          await this.logger.warn('Failed to download album art', {
+            error: artError.message
           });
           // Continue without album art
         }
       }
 
       const success = NodeID3.write(tags, audioPath);
-      
+
       if (!success) {
         throw new Error('Failed to write metadata tags');
       }
@@ -52,9 +52,9 @@ class MetadataEmbedder {
       await this.logger.info('Metadata embedded successfully', { audioPath });
       return audioPath;
     } catch (error) {
-      await this.logger.error('Metadata embedding failed', { 
-        audioPath, 
-        error: error.message 
+      await this.logger.error('Metadata embedding failed', {
+        audioPath,
+        error: error.message
       });
       // Don't fail the entire download if metadata fails
       return audioPath;
@@ -85,9 +85,9 @@ class MetadataEmbedder {
       const tags = NodeID3.read(audioPath);
       return tags;
     } catch (error) {
-      await this.logger.error('Failed to read metadata', { 
-        audioPath, 
-        error: error.message 
+      await this.logger.error('Failed to read metadata', {
+        audioPath,
+        error: error.message
       });
       return null;
     }
@@ -98,9 +98,9 @@ class MetadataEmbedder {
       const success = NodeID3.removeTags(audioPath);
       return success;
     } catch (error) {
-      await this.logger.error('Failed to remove metadata', { 
-        audioPath, 
-        error: error.message 
+      await this.logger.error('Failed to remove metadata', {
+        audioPath,
+        error: error.message
       });
       return false;
     }

@@ -33,14 +33,14 @@ program
       // Get or prompt for configuration
       const config = new Config();
       const credentials = await config.getOrPrompt();
-      
+
       // Create download command
       const downloader = new DownloadCommand(credentials);
-      
+
       // Start download
-      console.log(chalk.cyan(`\n📥 Starting download...\n`));
+      console.log(chalk.cyan('\n📥 Starting download...\n'));
       await downloader.download(url, options);
-      
+
       console.log(chalk.green('\n✨ All done!\n'));
     } catch (error) {
       console.error(chalk.red(`\n❌ Error: ${error.message}\n`));
