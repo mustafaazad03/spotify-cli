@@ -13,6 +13,19 @@ CLI tool to download Spotify playlists, albums, and tracks with high-quality aud
 - 🔒 Secure credential management
 - 🚀 Zero infrastructure cost - runs entirely on your machine
 
+## ✨ What's New in v1.1.0
+
+- 🔒 **Encrypted Credentials**: Your Spotify API credentials are now securely encrypted
+- 📊 **Statistics Tracking**: Track your download stats with `spotify-dl stats`
+- 🎨 **Custom Templates**: Name your files your way with `--template "{artist}/{album}/{track}"`
+- 🔍 **Dry-Run Mode**: Preview downloads before committing with `--dry-run`
+- 🔄 **Duplicate Detection**: Find and remove duplicates with `spotify-dl dedupe`
+- ✅ **Better Testing**: 75% code coverage with comprehensive tests
+- 🚀 **Performance**: Enhanced caching and parallel download management
+- 📝 **Structured Logging**: Winston-based logging with rotation
+
+See [CHANGELOG.md](CHANGELOG.md) for full details.
+
 ## Prerequisites
 
 ### Required Software
@@ -82,7 +95,7 @@ spotify-dl download https://open.spotify.com/track/3n3Ppam7vgaVa1iaRUc9Lp
 ### Download a Playlist
 
 ```bash
-spotify-dl download https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M
+spotify-dl download https://open.spotify.com/playlist/44YDp4eCFJedE5QPRzGXPd
 ```
 
 ### Download an Album
@@ -110,12 +123,33 @@ spotify-dl download <url> -o ./music -q 320 -c 3
 ### Available Commands
 
 ```bash
+# Core Commands
 spotify-dl config         # Configure Spotify API credentials
 spotify-dl download <url> # Download track/playlist/album
 spotify-dl clear-cache    # Clear metadata cache
 spotify-dl help-setup     # Show detailed setup instructions
+
+# New in v1.1.0
+spotify-dl stats          # Show download statistics
+spotify-dl dedupe <dir>   # Find duplicate files
 spotify-dl --version      # Show version number
 spotify-dl --help         # Show help information
+```
+
+### Download Options
+
+```bash
+# Basic options
+spotify-dl download <url> -o ~/Music/Spotify  # Custom output directory
+spotify-dl download <url> -q 320              # Audio quality (128/192/256/320)
+spotify-dl download <url> -c 5                # Concurrent downloads (1-10)
+
+# New in v1.1.0
+spotify-dl download <url> --dry-run           # Preview without downloading
+spotify-dl download <url> --template "{artist} - {track}"  # Custom filename template
+
+# Template variables: {artist}, {track}, {album}, {year}, {track_number}
+spotify-dl download <url> --template "{artist}/{album}/{track_number} - {track}"
 ```
 
 ## Architecture

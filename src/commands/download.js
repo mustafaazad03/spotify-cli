@@ -10,6 +10,8 @@ const MetadataEmbedder = require('../core/metadata');
 const ProgressManager = require('../utils/progress');
 const MetadataCache = require('../utils/cache');
 const Logger = require('../utils/logger');
+const TemplateParser = require('../utils/template');
+const StatsTracker = require('../utils/stats');
 
 /**
  * Download command implementation
@@ -24,6 +26,8 @@ class DownloadCommand {
     this.progress = new ProgressManager();
     this.cache = new MetadataCache();
     this.logger = new Logger();
+    this.template = new TemplateParser();
+    this.stats = new StatsTracker();
     this.useYtDlp = null; // Will be determined on first use
   }
 
@@ -132,15 +136,22 @@ class DownloadCommand {
   }
 
   async downloadAndProcessTrack(track, options) {
-    const { output, quality } = options;
+    const { output, quality, template, dryRun } = options;
 
     // Initialize downloader if not done yet
     await this.initializeDownloader();
 
-    // Sanitize filename
-    const filename = this.sanitizeFilename(`${track.artist} - ${track.name}`);
+    // Generate filename from template or use default
+    const filenameTemplate = template || this.template.getDefaultTemplate();
+    const filename = this.template.parse(filenameTemplate, track);
     const tempPath = path.join(output, `${filename}.temp`);
     const outputPath = path.join(output, `${filename}.mp3`);
+
+    // Dry run mode - just show what would be downloaded
+    if (dryRun) {
+      await this.logger.info('Dry run: would download', { track: `${track.artist} - ${track.name}`, outputPath });
+      return outputPath;
+    }
 
     // Check if file already exists
     try {
@@ -193,6 +204,10 @@ class DownloadCommand {
 
     // Embed metadata
     await this.metadata.embedMetadata(outputPath, track);
+
+    // Track stats
+    const stats = await fs.stat(outputPath);
+    await this.stats.recordDownload('track', { artist: track.artist, name: track.name }, true, stats.size);
 
     await this.logger.info('Track download completed', {
       track: `${track.artist} - ${track.name}`,

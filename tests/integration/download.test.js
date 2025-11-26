@@ -34,6 +34,7 @@ jest.mock('fs', () => ({
         mkdir: jest.fn(),
         access: jest.fn(),
         readFile: jest.fn(),
+        stat: jest.fn().mockResolvedValue({ size: 5242880 }), // 5MB
         writeFile: jest.fn()
     }
 }));

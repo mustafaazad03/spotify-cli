@@ -34,16 +34,21 @@ program
   .option('-o, --output <dir>', 'Output directory', './downloads')
   .option('-q, --quality <quality>', 'Audio quality (128, 192, 256, 320)', '320')
   .option('-c, --concurrent <number>', 'Concurrent downloads', '3')
+  .option('--dry-run', 'Simulate download without actually downloading')
+  .option('--template <template>', 'Custom filename template (e.g., "{artist} - {track}")')
   .action(async (url, options) => {
     try {
       // Get or prompt for configuration
       const config = new Config();
       const credentials = await config.getOrPrompt();
 
-      // Create download command
+      // Createdownload command
       const downloader = new DownloadCommand(credentials);
 
       // Start download
+      if (options.dryRun) {
+        console.log(chalk.yellow('\n🔍 Dry run mode - no files will be downloaded\n'));
+      }
       console.log(chalk.cyan('\n📥 Starting download...\n'));
       await downloader.download(url, options);
 
@@ -103,6 +108,33 @@ program
     console.log('4. Start downloading:');
     console.log(chalk.yellow('   spotify-dl download <spotify-url>\n'));
     console.log(chalk.green('Happy downloading! 🎵\n'));
+  });
+
+program
+  .command('stats')
+  .description('Show download statistics')
+  .action(async () => {
+    try {
+      const statsCommand = require('../src/commands/stats');
+      await statsCommand();
+    } catch (error) {
+      console.error(chalk.red(`\n❌ Error: ${error.message}\n`));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('dedupe <directory>')
+  .description('Find and remove duplicate files')
+  .option('--remove', 'Actually remove duplicates (default: dry run)')
+  .action(async (directory, options) => {
+    try {
+      const dedupeCommand = require('../src/commands/dedupe');
+      await dedupeCommand(directory, options);
+    } catch (error) {
+      console.error(chalk.red(`\n❌ Error: ${error.message}\n`));
+      process.exit(1);
+    }
   });
 
 // Show help if no arguments
