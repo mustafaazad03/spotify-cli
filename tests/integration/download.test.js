@@ -1,6 +1,7 @@
 const DownloadCommand = require('../../src/commands/download');
 const SpotifyClient = require('../../src/core/spotify');
 const YouTubeDownloader = require('../../src/core/youtube');
+const YouTubeDlpDownloader = require('../../src/core/youtube-dlp');
 const AudioProcessor = require('../../src/core/audio');
 const MetadataEmbedder = require('../../src/core/metadata');
 const fs = require('fs').promises;
@@ -8,6 +9,7 @@ const path = require('path');
 
 jest.mock('../../src/core/spotify');
 jest.mock('../../src/core/youtube');
+jest.mock('../../src/core/youtube-dlp');
 jest.mock('../../src/core/audio');
 jest.mock('../../src/core/metadata');
 jest.mock('ora', () => {
@@ -31,7 +33,8 @@ jest.mock('fs', () => ({
     promises: {
         mkdir: jest.fn(),
         access: jest.fn(),
-        readFile: jest.fn()
+        readFile: jest.fn(),
+        writeFile: jest.fn()
     }
 }));
 
@@ -45,6 +48,9 @@ describe('Download Integration', () => {
     });
 
     test('should download a track successfully', async () => {
+        // Mock yt-dlp check to return false (use YouTubeDownloader)
+        YouTubeDlpDownloader.prototype.checkYtDlp.mockResolvedValue(false);
+
         // Mock Spotify response
         SpotifyClient.prototype.getTrack.mockResolvedValue({
             id: 'track1',
@@ -52,6 +58,9 @@ describe('Download Integration', () => {
             artist: 'Test Artist',
             album: 'Test Album'
         });
+
+        // Mock fs.access to reject (file doesn't exist)
+        fs.access.mockRejectedValue(new Error('File not found'));
 
         // Mock YouTube search
         YouTubeDownloader.prototype.searchTrack.mockResolvedValue('video1');
