@@ -1,49 +1,63 @@
-const fs = require('fs').promises;
+const winston = require('winston');
 const path = require('path');
 const os = require('os');
 
-/**
- * Simple logger utility
- */
-class Logger {
+const logDir = path.join(os.homedir(), '.spotify-dl-logs');
+
+const logger = winston.createLogger({
+  level: process.env.LOG_LEVEL || 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.errors({ stack: true }),
+    winston.format.json()
+  ),
+  defaultMeta: { service: 'spotify-dl' },
+  transports: [
+    new winston.transports.File({
+      filename: path.join(logDir, 'error.log'),
+      level: 'error',
+      maxsize: 5242880, // 5MB
+      maxFiles: 5
+    }),
+    new winston.transports.File({
+      filename: path.join(logDir, 'combined.log'),
+      maxsize: 5242880, // 5MB
+      maxFiles: 5
+    })
+  ]
+});
+
+// If we're not in production then log to the `console` with the format:
+if (process.env.NODE_ENV !== 'production') {
+  logger.add(new winston.transports.Console({
+    format: winston.format.combine(
+      winston.format.colorize(),
+      winston.format.simple()
+    )
+  }));
+}
+
+// Wrapper class to maintain backward compatibility with existing code
+class LoggerWrapper {
   constructor() {
-    this.logDir = path.join(os.homedir(), '.spotify-dl-logs');
-    this.logFile = path.join(this.logDir, `spotify-dl-${this.getDateString()}.log`);
+    this.logger = logger;
   }
 
-  async log(level, message, data = null) {
-    const timestamp = new Date().toISOString();
-
-    const logLine = `[${timestamp}] [${level.toUpperCase()}] ${message}${data ? ' ' + JSON.stringify(data) : ''}\n`;
-
-    try {
-      await fs.mkdir(this.logDir, { recursive: true });
-      await fs.appendFile(this.logFile, logLine);
-    } catch (error) {
-      // Silent fail for logging
-    }
+  async info(message, meta = {}) {
+    this.logger.info(message, meta);
   }
 
-  async info(message, data) {
-    await this.log('info', message, data);
+  async warn(message, meta = {}) {
+    this.logger.warn(message, meta);
   }
 
-  async error(message, data) {
-    await this.log('error', message, data);
+  async error(message, meta = {}) {
+    this.logger.error(message, meta);
   }
 
-  async warn(message, data) {
-    await this.log('warn', message, data);
-  }
-
-  async debug(message, data) {
-    await this.log('debug', message, data);
-  }
-
-  getDateString() {
-    const date = new Date();
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  async debug(message, meta = {}) {
+    this.logger.debug(message, meta);
   }
 }
 
-module.exports = Logger;
+module.exports = LoggerWrapper;
