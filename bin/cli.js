@@ -10,12 +10,18 @@ const Config = require('../src/utils/config');
 console.log(chalk.cyan(`
 ╔═══════════════════════════════════════════════════════════╗
 ║                                                           ║
-║      🎵  Spotify Music Downloader CLI  🎵                ║
+║      🎵  Spotify Music Downloader CLI  🎵                 ║
 ║                                                           ║
-║      Download Spotify playlists & tracks to MP3          ║
+║      Download Spotify playlists & tracks to MP3           ║
 ║                                                           ║
 ╚═══════════════════════════════════════════════════════════╝
 `));
+
+// Legal Warning
+console.log(chalk.yellow.bold('⚠️  LEGAL DISCLAIMER: FOR PERSONAL & EDUCATIONAL USE ONLY'));
+console.log(chalk.yellow('   This tool uses Spotify for metadata and YouTube for audio.'));
+console.log(chalk.yellow('   Downloading copyrighted content may violate Terms of Service.'));
+console.log(chalk.yellow('   You are responsible for your actions.\n'));
 
 program
   .name('spotify-dl')

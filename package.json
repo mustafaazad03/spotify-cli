@@ -1,6 +1,6 @@
 {
   "name": "spotify-music-downloader-cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "CLI tool to download Spotify playlists and songs",
   "main": "src/index.js",
   "bin": {

@@ -140,17 +140,16 @@ User's Machine
 - **Rate Limiter**: Prevents API quota exhaustion
 - **Cache System**: Reduces redundant API calls
 
-## Legal Disclaimer
+> [!CAUTION]
+> **LEGAL DISCLAIMER: PERSONAL & EDUCATIONAL USE ONLY**
+>
+> This tool is intended strictly for **educational purposes** and **personal use**.
+> - It uses the Spotify API for metadata only.
+> - Audio is sourced from third-party services (YouTube).
+> - Downloading copyrighted material without permission may violate the Terms of Service of Spotify, YouTube, and your local copyright laws.
+> - The developers of this tool assume **no liability** for any misuse or legal consequences arising from the use of this software.
+> - **By using this tool, you agree to take full responsibility for your actions.**
 
-**IMPORTANT**: This tool is for educational purposes only.
-
-- The Spotify API is used **only for metadata** (artist names, track info, artwork URLs)
-- Audio is sourced from YouTube, not Spotify
-- Downloading copyrighted content may violate terms of service
-- Users are responsible for compliance with local laws and platform ToS
-- The developers assume no liability for misuse of this software
-
-**Use responsibly and respect artists' rights.**
 
 ## Troubleshooting
 

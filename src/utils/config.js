@@ -2,6 +2,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const os = require('os');
 const inquirer = require('inquirer');
+const auth = require('./auth');
 
 /**
  * Configuration management
@@ -15,7 +16,20 @@ class Config {
   async load() {
     try {
       const data = await fs.readFile(this.configFile, 'utf8');
-      return JSON.parse(data);
+
+      // Try to parse as JSON first
+      try {
+        const plain = JSON.parse(data);
+        if (plain.clientId && plain.clientSecret) {
+          await this.save(plain); // Re-save as encrypted
+          return plain;
+        }
+      } catch (e) {
+      }
+
+      // Decrypt
+      const decrypted = await auth.decrypt(data);
+      return JSON.parse(decrypted);
     } catch (error) {
       return null;
     }
@@ -23,7 +37,8 @@ class Config {
 
   async save(config) {
     await fs.mkdir(this.configDir, { recursive: true });
-    await fs.writeFile(this.configFile, JSON.stringify(config, null, 2));
+    const encrypted = await auth.encrypt(JSON.stringify(config));
+    await fs.writeFile(this.configFile, encrypted);
   }
 
   async exists() {

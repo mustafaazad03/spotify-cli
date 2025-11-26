@@ -1,6 +1,8 @@
 const axios = require('axios');
 const TokenBucket = require('../utils/rate-limiter');
 const Logger = require('../utils/logger');
+const SpotifyDLError = require('../utils/errors');
+const retryWithBackoff = require('../utils/retry');
 
 /**
  * Spotify Web API Client
@@ -40,7 +42,11 @@ class SpotifyClient {
       await this.logger.info('Spotify authentication successful');
     } catch (error) {
       await this.logger.error('Spotify authentication failed', { error: error.message });
-      throw new Error(`Spotify authentication failed: ${error.response?.data?.error_description || error.message}`);
+      throw new SpotifyDLError(
+        `Spotify authentication failed: ${error.response?.data?.error_description || error.message}`,
+        'AUTH_FAILED',
+        { originalError: error.message }
+      );
     }
   }
 
@@ -54,45 +60,66 @@ class SpotifyClient {
     await this.ensureAuthenticated();
     await this.rateLimiter.consume(1);
 
-    try {
-      const response = await axios.get(`${this.baseURL}${endpoint}`, {
-        headers: {
-          'Authorization': `Bearer ${this.accessToken}`
-        },
-        params
-      });
+    return retryWithBackoff(async () => {
+      try {
+        const response = await axios.get(`${this.baseURL}${endpoint}`, {
+          headers: {
+            'Authorization': `Bearer ${this.accessToken}`
+          },
+          params
+        });
 
-      return response.data;
-    } catch (error) {
-      if (error.response?.status === 429) {
-        const retryAfter = parseInt(error.response.headers['retry-after'] || '5');
-        await this.logger.warn(`Rate limited, retrying after ${retryAfter}s`);
-        await this.sleep(retryAfter * 1000);
-        return this.makeRequest(endpoint, params);
+        return response.data;
+      } catch (error) {
+        if (error.response?.status === 404) {
+          const resourceType = endpoint.includes('/playlist') ? 'Playlist'
+            : endpoint.includes('/album') ? 'Album'
+              : endpoint.includes('/track') ? 'Track' : 'Resource';
+          throw new SpotifyDLError(
+            `${resourceType} not found. The URL may be incorrect or the resource may be private/unavailable.`,
+            'NOT_FOUND',
+            { endpoint }
+          );
+        }
+
+        if (error.response?.status === 401) {
+          // Token might be expired, try to re-auth once (not handled by retryWithBackoff usually, but let's throw specific error)
+          // In a more complex setup, we'd refresh token and retry immediately, but here we just fail for now or let retry handle transient 401s if any?
+          // Actually, standard 401 means re-auth needed.
+          throw new SpotifyDLError(
+            'Authentication failed. Please run: spotify-dl config',
+            'AUTH_REQUIRED'
+          );
+        }
+
+        // For other errors, rethrow so retryWithBackoff can catch them
+        // We attach status to help retry logic if needed
+        error.status = error.response?.status;
+        throw error;
       }
-
-      if (error.response?.status === 404) {
-        const resourceType = endpoint.includes('/playlist') ? 'Playlist'
-          : endpoint.includes('/album') ? 'Album'
-            : endpoint.includes('/track') ? 'Track' : 'Resource';
-        throw new Error(
-          `${resourceType} not found. The URL may be incorrect or ` +
-          'the resource may be private/unavailable.'
-        );
+    }, {
+      maxRetries: 3,
+      shouldRetry: (error) => {
+        // Don't retry 404s or 401s (unless we implemented token refresh logic inside retry, which we haven't)
+        if (error instanceof SpotifyDLError) return false;
+        if (error.status === 404 || error.status === 401) return false;
+        return true; // Retry network errors, 5xx, 429s
       }
+    }).catch(error => {
+      // Catch final error after retries
+      if (error instanceof SpotifyDLError) throw error;
 
-      if (error.response?.status === 401) {
-        throw new Error('Authentication failed. Please run: spotify-dl config');
-      }
-
-      await this.logger.error('Spotify API request failed', {
-        endpoint,
-        status: error.response?.status,
-        error: error.message
-      });
-
-      throw new Error(`Spotify API error: ${error.response?.data?.error?.message || error.message}`);
-    }
+      // Wrap unknown errors
+      throw new SpotifyDLError(
+        `Spotify API error: ${error.response?.data?.error?.message || error.message}`,
+        'API_ERROR',
+        {
+          endpoint,
+          status: error.response?.status,
+          originalError: error.message
+        }
+      );
+    });
   }
 
   async getTrack(trackId) {
