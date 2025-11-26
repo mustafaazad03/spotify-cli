@@ -25,6 +25,7 @@ class Config {
           return plain;
         }
       } catch (e) {
+        // Not JSON, assume encrypted string
       }
 
       // Decrypt

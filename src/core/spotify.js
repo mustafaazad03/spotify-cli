@@ -83,9 +83,6 @@ class SpotifyClient {
         }
 
         if (error.response?.status === 401) {
-          // Token might be expired, try to re-auth once (not handled by retryWithBackoff usually, but let's throw specific error)
-          // In a more complex setup, we'd refresh token and retry immediately, but here we just fail for now or let retry handle transient 401s if any?
-          // Actually, standard 401 means re-auth needed.
           throw new SpotifyDLError(
             'Authentication failed. Please run: spotify-dl config',
             'AUTH_REQUIRED'
@@ -101,13 +98,19 @@ class SpotifyClient {
       maxRetries: 3,
       shouldRetry: (error) => {
         // Don't retry 404s or 401s (unless we implemented token refresh logic inside retry, which we haven't)
-        if (error instanceof SpotifyDLError) return false;
-        if (error.status === 404 || error.status === 401) return false;
+        if (error instanceof SpotifyDLError) {
+          return false;
+        }
+        if (error.status === 404 || error.status === 401) {
+          return false;
+        }
         return true; // Retry network errors, 5xx, 429s
       }
     }).catch(error => {
       // Catch final error after retries
-      if (error instanceof SpotifyDLError) throw error;
+      if (error instanceof SpotifyDLError) {
+        throw error;
+      }
 
       // Wrap unknown errors
       throw new SpotifyDLError(
