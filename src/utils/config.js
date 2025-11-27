@@ -2,6 +2,8 @@ const fs = require('fs').promises;
 const path = require('path');
 const os = require('os');
 const inquirer = require('inquirer');
+const chalk = require('chalk');
+const clipboardy = require('clipboardy');
 const auth = require('./auth');
 
 /**
@@ -52,22 +54,71 @@ class Config {
   }
 
   async promptForConfig() {
-    console.log('\n🎵 Spotify Downloader - Configuration Setup\n');
+    console.log(chalk.cyan.bold('\n🎵 Spotify Downloader - Configuration Setup\n'));
     console.log('To use this tool, you need Spotify API credentials.');
-    console.log('Get them at: https://developer.spotify.com/dashboard\n');
+    console.log(chalk.yellow('Opening Spotify Developer Dashboard in your browser...\n'));
+
+    // Open browser to Spotify Dashboard
+    try {
+      const openBrowser = (await import('open')).default;
+      await openBrowser('https://developer.spotify.com/dashboard');
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2s for browser to open
+    } catch (error) {
+      console.log(chalk.yellow('Unable to open browser automatically.'));
+      console.log('Please visit: https://developer.spotify.com/dashboard\n');
+    }
+
+    console.log(chalk.cyan('📋 Steps to get your credentials:\n'));
+    console.log('1. Log in to the Spotify Developer Dashboard');
+    console.log('2. Click "Create app" (or select an existing app)');
+    console.log('3. Fill in the required fields (any values work for personal use)');
+    console.log('4. Click "Settings" to view your credentials');
+    console.log('5. Copy your Client ID and Client Secret\n');
+
+    console.log(chalk.gray('💡 Tip: You can paste directly (Ctrl+V) when prompted\n'));
+
+    // Try to detect clipboard for Client ID
+    let defaultClientId = '';
+    try {
+      const clipboard = await clipboardy.read();
+      if (clipboard && clipboard.length === 32 && /^[a-f0-9]+$/i.test(clipboard)) {
+        defaultClientId = clipboard;
+        console.log(chalk.green('✓ Detected Client ID in clipboard!\n'));
+      }
+    } catch (error) {
+      // Clipboard detection failed, continue normally
+    }
 
     const answers = await inquirer.prompt([
       {
         type: 'input',
         name: 'clientId',
         message: 'Enter your Spotify Client ID:',
-        validate: (input) => input.length > 0 || 'Client ID is required'
+        default: defaultClientId,
+        validate: (input) => {
+          if (!input || input.trim().length === 0) {
+            return 'Client ID is required';
+          }
+          if (input.length !== 32) {
+            return 'Client ID should be 32 characters long';
+          }
+          return true;
+        }
       },
       {
         type: 'password',
         name: 'clientSecret',
         message: 'Enter your Spotify Client Secret:',
-        validate: (input) => input.length > 0 || 'Client Secret is required'
+        mask: '*',
+        validate: (input) => {
+          if (!input || input.trim().length === 0) {
+            return 'Client Secret is required';
+          }
+          if (input.length !== 32) {
+            return 'Client Secret should be 32 characters long';
+          }
+          return true;
+        }
       }
     ]);
 

@@ -23,6 +23,7 @@ CLI tool to download Spotify playlists, albums, and tracks with high-quality aud
 - ✅ **Better Testing**: 75% code coverage with comprehensive tests
 - 🚀 **Performance**: Enhanced caching and parallel download management
 - 📝 **Structured Logging**: Winston-based logging with rotation
+- 🌐 **Auto-Config**: Browser opens automatically during `spotify-dl config` setup
 
 See [CHANGELOG.md](CHANGELOG.md) for full details.
 
