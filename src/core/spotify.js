@@ -66,7 +66,10 @@ class SpotifyClient {
           headers: {
             'Authorization': `Bearer ${this.accessToken}`
           },
-          params
+          params: {
+            ...params,
+            market: params.market || 'US' // Default to US market for editorial playlists
+          }
         });
 
         return response.data;
@@ -75,10 +78,14 @@ class SpotifyClient {
           const resourceType = endpoint.includes('/playlist') ? 'Playlist'
             : endpoint.includes('/album') ? 'Album'
               : endpoint.includes('/track') ? 'Track' : 'Resource';
+
+          // Extract ID from endpoint for better error message
+          const id = endpoint.split('/')[2] || 'unknown';
+
           throw new SpotifyDLError(
-            `${resourceType} not found. The URL may be incorrect or the resource may be private/unavailable.`,
+            `${resourceType} not found (ID: ${id}). The URL may be incorrect or the resource may be private/unavailable.`,
             'NOT_FOUND',
-            { endpoint }
+            { endpoint, id }
           );
         }
 

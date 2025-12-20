@@ -51,15 +51,20 @@ class DownloadCommand {
     }
 
     const spinner = this.progress.showSpinner('Fetching track information...');
-    const track = await this.spotify.getTrack(trackId);
-    spinner.succeed(`Found: ${track.artist} - ${track.name}`);
+    try {
+      const track = await this.spotify.getTrack(trackId);
+      spinner.succeed(`Found: ${track.artist} - ${track.name}`);
 
-    // Create output directory
-    await fs.mkdir(options.output, { recursive: true });
+      // Create output directory
+      await fs.mkdir(options.output, { recursive: true });
 
-    await this.downloadAndProcessTrack(track, options);
+      await this.downloadAndProcessTrack(track, options);
 
-    this.progress.showSuccess(`Downloaded: ${track.artist} - ${track.name}`);
+      this.progress.showSuccess(`Downloaded: ${track.artist} - ${track.name}`);
+    } catch (error) {
+      spinner.fail(`Failed to fetch track: ${error.message}`);
+      throw error;
+    }
   }
 
   async downloadPlaylist(url, options) {
@@ -70,10 +75,15 @@ class DownloadCommand {
     }
 
     const spinner = this.progress.showSpinner('Fetching playlist tracks...');
-    const tracks = await this.spotify.getPlaylistTracks(playlistId);
-    spinner.succeed(`Found ${tracks.length} tracks`);
+    try {
+      const tracks = await this.spotify.getPlaylistTracks(playlistId);
+      spinner.succeed(`Found ${tracks.length} tracks`);
 
-    await this.downloadMultipleTracks(tracks, options);
+      await this.downloadMultipleTracks(tracks, options);
+    } catch (error) {
+      spinner.fail(`Failed to fetch playlist: ${error.message}`);
+      throw error;
+    }
   }
 
   async downloadAlbum(url, options) {
@@ -84,10 +94,15 @@ class DownloadCommand {
     }
 
     const spinner = this.progress.showSpinner('Fetching album tracks...');
-    const tracks = await this.spotify.getAlbumTracks(albumId);
-    spinner.succeed(`Found ${tracks.length} tracks`);
+    try {
+      const tracks = await this.spotify.getAlbumTracks(albumId);
+      spinner.succeed(`Found ${tracks.length} tracks`);
 
-    await this.downloadMultipleTracks(tracks, options);
+      await this.downloadMultipleTracks(tracks, options);
+    } catch (error) {
+      spinner.fail(`Failed to fetch album: ${error.message}`);
+      throw error;
+    }
   }
 
   async downloadMultipleTracks(tracks, options) {
@@ -231,51 +246,62 @@ class DownloadCommand {
   }
 
   extractTrackId(url) {
-    // Remove query parameters and extract ID
     const cleanUrl = url.split('?')[0];
-    const match = cleanUrl.match(/track\/([a-zA-Z0-9]+)/);
+    const match = cleanUrl.match(/track\/([a-zA-Z0-9]+)/) || cleanUrl.match(/spotify:track:([a-zA-Z0-9]+)/);
     return match ? match[1] : null;
   }
 
   extractPlaylistId(url) {
-    // Remove query parameters and extract ID
     const cleanUrl = url.split('?')[0];
-    const match = cleanUrl.match(/playlist\/([a-zA-Z0-9]+)/);
+    const match = cleanUrl.match(/playlist\/([a-zA-Z0-9]+)/) || cleanUrl.match(/spotify:playlist:([a-zA-Z0-9]+)/);
     return match ? match[1] : null;
   }
 
   extractAlbumId(url) {
-    // Remove query parameters and extract ID
     const cleanUrl = url.split('?')[0];
-    const match = cleanUrl.match(/album\/([a-zA-Z0-9]+)/);
+    const match = cleanUrl.match(/album\/([a-zA-Z0-9]+)/) || cleanUrl.match(/spotify:album:([a-zA-Z0-9]+)/);
     return match ? match[1] : null;
   }
 
   detectUrlType(url) {
-    if (url.includes('/track/')) {
+    if (url.includes('/track/') || url.includes('spotify:track:')) {
       return 'track';
     }
-    if (url.includes('/playlist/')) {
+    if (url.includes('/playlist/') || url.includes('spotify:playlist:')) {
       return 'playlist';
     }
-    if (url.includes('/album/')) {
+    if (url.includes('/album/') || url.includes('spotify:album:')) {
       return 'album';
     }
     return null;
   }
 
+  async resolveUrl(url) {
+    if (url.includes('spoti.fi/') || url.includes('spotify.link/')) {
+      const axios = require('axios');
+      try {
+        const response = await axios.get(url, { maxRedirects: 5 });
+        return response.request.res.responseUrl || url;
+      } catch (error) {
+        return url;
+      }
+    }
+    return url;
+  }
+
   async download(url, options) {
-    const urlType = this.detectUrlType(url);
+    const resolvedUrl = await this.resolveUrl(url);
+    const urlType = this.detectUrlType(resolvedUrl);
 
     switch (urlType) {
       case 'track':
-        await this.downloadTrack(url, options);
+        await this.downloadTrack(resolvedUrl, options);
         break;
       case 'playlist':
-        await this.downloadPlaylist(url, options);
+        await this.downloadPlaylist(resolvedUrl, options);
         break;
       case 'album':
-        await this.downloadAlbum(url, options);
+        await this.downloadAlbum(resolvedUrl, options);
         break;
       default:
         throw new Error('Invalid Spotify URL. Must be a track, playlist, or album URL.');

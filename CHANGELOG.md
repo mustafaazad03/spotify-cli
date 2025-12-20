@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.2] - 2025-12-20
+
+### Added
+- **Bulk Download**: Support for multiple URLs and `--file` input in `download` command
+- **Scheduled Downloads**: New `schedule` command using cron syntax for automated tasks
+- **Playlist Export**: New `export` command to save playlist/album tracks to JSON or TXT
+- **Concurrency Control**: Improved handling for bulk playlist processing
+
+## [1.1.1] - 2025-11-26
+
+### Added
+- Improved error messages for rate limiting
+- Fixed minor bug in metadata embedding for albums with long titles
+- Updated dependencies for security
+
 ## [1.1.0] - 2025-11-26
 
 ### Added

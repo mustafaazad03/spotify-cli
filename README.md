@@ -121,18 +121,28 @@ spotify-dl download <url> -c 5
 spotify-dl download <url> -o ./music -q 320 -c 3
 ```
 
-### Available Commands
+### Core Commands
 
 ```bash
-# Core Commands
+# Configuration & Setup
 spotify-dl config         # Configure Spotify API credentials
-spotify-dl download <url> # Download track/playlist/album
-spotify-dl clear-cache    # Clear metadata cache
 spotify-dl help-setup     # Show detailed setup instructions
 
-# New in v1.1.0
-spotify-dl stats          # Show download statistics
-spotify-dl dedupe <dir>   # Find duplicate files
+# Downloading (supports multiple URLs)
+spotify-dl download <url1> [url2...]     # Download tracks/playlists/albums
+spotify-dl download --file urls.txt      # Bulk download from a file
+
+# Playlist Management
+spotify-dl export <url> [output.json]    # Export playlist/album tracks to file
+spotify-dl stats                         # Show download statistics
+spotify-dl dedupe <dir>                  # Find duplicate files
+
+# Scheduling
+spotify-dl schedule "0 0 * * *" <url>    # Schedule download (cron syntax)
+spotify-dl schedule "0 0 * * *" -f f.txt # Schedule bulk from file
+
+# Utilities
+spotify-dl clear-cache    # Clear metadata cache
 spotify-dl --version      # Show version number
 spotify-dl --help         # Show help information
 ```
@@ -145,12 +155,27 @@ spotify-dl download <url> -o ~/Music/Spotify  # Custom output directory
 spotify-dl download <url> -q 320              # Audio quality (128/192/256/320)
 spotify-dl download <url> -c 5                # Concurrent downloads (1-10)
 
-# New in v1.1.0
+# Bulk download
+spotify-dl download <url1> <url2> <url3>      # Multiple URLs at once
+spotify-dl download --file playlists.txt      # Load URLs from a text file
+
+# Scheduling (New in v1.1.2)
+# Schedule a daily download at midnight in the background
+spotify-dl schedule "0 0 * * *" https://open.spotify.com/playlist/... --background
+
+# Management commands
+spotify-dl schedule-status  # Check if background task is running
+spotify-dl schedule-stop    # Stop the background task
+```
+
+### 💡 Persistence (Note)
+The `--background` flag spawns a detached process that survives terminal closure on Linux, macOS, and Windows. It does not require PM2 or any external process manager. Logs are kept at `~/.spotify-dl/schedule.log`.
+
+**Note**: The process will stop if the computer is restarted. For reboot-persistence, use your OS's native tools (crontab for Unix, Task Scheduler for Windows) pointing to the `spotify-dl download` command.
+
+# Advanced options
 spotify-dl download <url> --dry-run           # Preview without downloading
 spotify-dl download <url> --template "{artist} - {track}"  # Custom filename template
-
-# Template variables: {artist}, {track}, {album}, {year}, {track_number}
-spotify-dl download <url> --template "{artist}/{album}/{track_number} - {track}"
 ```
 
 ## Architecture
