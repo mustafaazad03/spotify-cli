@@ -12,18 +12,23 @@ CLI tool to download Spotify playlists, albums, and tracks with high-quality aud
 - 📊 Beautiful progress bars and real-time feedback
 - 🔒 Secure credential management
 - 🚀 Zero infrastructure cost - runs entirely on your machine
+- 🔒 Encrypted Credentials: Your Spotify API credentials are now securely encrypted
+- 📊 Statistics Tracking: Track your download stats with `spotify-dl stats`
+- 🎨 Custom Templates: Name your files your way with `--template "{artist}/{album}/{track}"`
+- 🔍 Dry-Run Mode: Preview downloads before committing with `--dry-run`
+- 🔄 Duplicate Detection: Find and remove duplicates with `spotify-dl dedupe`
+- ✅ Better Testing: 75% code coverage with comprehensive tests
+- 🚀 Performance: Enhanced caching and parallel download management
+- 📝 Structured Logging: Winston-based logging with rotation
+- 🌐 Auto-Config: Browser opens automatically during `spotify-dl config` setup
 
-## ✨ What's New in v1.1.0
+## ✨ What's New in v1.1.2
 
-- 🔒 **Encrypted Credentials**: Your Spotify API credentials are now securely encrypted
-- 📊 **Statistics Tracking**: Track your download stats with `spotify-dl stats`
-- 🎨 **Custom Templates**: Name your files your way with `--template "{artist}/{album}/{track}"`
-- 🔍 **Dry-Run Mode**: Preview downloads before committing with `--dry-run`
-- 🔄 **Duplicate Detection**: Find and remove duplicates with `spotify-dl dedupe`
-- ✅ **Better Testing**: 75% code coverage with comprehensive tests
-- 🚀 **Performance**: Enhanced caching and parallel download management
-- 📝 **Structured Logging**: Winston-based logging with rotation
-- 🌐 **Auto-Config**: Browser opens automatically during `spotify-dl config` setup
+- 📦 **Bulk Download**: Download multiple URLs at once or load them from a text file with `--file`
+- ⏰ **Native Scheduling**: Schedule recurring downloads using standard cron syntax (e.g., `"0 0 * * *"`)
+- 👻 **Background Daemon**: Run the scheduler in the background with `--background` - survives terminal closure!
+- 📤 **Playlist Export**: Export any playlist or album to JSON or TXT format with `spotify-dl export`
+- 🔗 **Smart URL Resolution**: Support for mobile share links (`spotify.link`), short links (`spoti.fi`), and Spotify URIs
 
 See [CHANGELOG.md](CHANGELOG.md) for full details.
 
